@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Laila:wght@300;400;500;600;700&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+@import "tailwindcss";
+@plugin "tailwind-scrollbar";
+
+@theme {
+    --color-primary: #045694;
+    --color-secondary: #eef2fb;
+    --color-dark: #000000;
+    --color-light: #ffffff;
+    --default-font-family: "Open Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+.my-custom-calendar .react-calendar__navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.my-custom-calendar .react-calendar__navigation__label {
+  text-align: center;
+  flex-grow: 0 !important; 
+}
+
+.my-custom-calendar .react-calendar__tile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 44px; 
+}
+
+.my-custom-calendar .react-calendar__month-view__weekdays__weekday {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.my-custom-calendar .react-calendar__navigation__label {
+  text-align: center;
+  flex-grow: 0 !important;
+  pointer-events: none; 
+  background: transparent !important; 
+}
+
+.my-custom-calendar .react-calendar__navigation__next-button {
+  margin-left: 20px; 
+}
+
+.my-custom-calendar .react-calendar__navigation__prev-button {
+  margin-right: 20px; 
+}
+
+.my-custom-calendar .react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none !important;
+  border-bottom: none !important; 
+}
+
+.my-custom-calendar {
+  width: 100% !important;
+  font-size: 1rem;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px; 
+}
+
+.my-custom-calendar .react-calendar__tile--active {
+  background: transparent !important;
+}
+
+.my-custom-calendar .react-calendar__tile--active abbr {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 44px;   
+  height: 44px;  
+  background: rgba(255, 255, 255, 0.3) !important;
+  border-radius: 10px !important; 
+  font-weight: 700;
+}
