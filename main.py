@@ -223,11 +223,6 @@ async def get_teams():
     
     return teams
 
-        
-
-
-    
-
-
-
-
+@app.get("/health")
+def health():
+    return {"status": "ok"}
