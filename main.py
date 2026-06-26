@@ -12,7 +12,10 @@ from dateutil import tz
 from dotenv import load_dotenv
 load_dotenv()
 
-origins = ["http://localhost:5173"]
+origins = [
+    "http://localhost:5173",
+    "https://world-cup-2026-ai-prediction.vercel.app"
+]
 
 def date_to_utc_range(date_str, timezone_str):
     dt_object = datetime.strptime(date_str, "%Y-%m-%d")
