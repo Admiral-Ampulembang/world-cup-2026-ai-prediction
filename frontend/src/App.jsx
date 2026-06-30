@@ -1,3 +1,4 @@
+import Footer from './components/Footer';
 import NavBar from './components/NavBar';
 import Overview from './components/Overview';
 import TodaysMatch from './components/TodaysMatch';
@@ -12,6 +13,7 @@ function App() {
       <TodaysMatch />
       <TournamentChance />
       <TournamentTracker />
+      <Footer />
     </div>
   )
 }

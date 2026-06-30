@@ -67,7 +67,7 @@ async def lifespan(app: FastAPI):
     refresh_standings()
 
     scheduler = BackgroundScheduler()
-    scheduler.add_job(poll_fixtures, "cron", minute="0,30", hour="12-23", timezone="UTC")
+    scheduler.add_job(poll_fixtures, "cron", minute="0,30", timezone="UTC")
     scheduler.start()
 
     yield
