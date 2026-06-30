@@ -5,7 +5,7 @@ import numpy as np
 from itertools import combinations
 
 df = pd.read_csv("data/results.csv")
-fifa_rankings = pd.read_csv("data/fifa_rankings.csv")
+fifa_rankings = pd.read_csv("data/fifa_ranking-2024-04-04.csv")
 model_xgb = joblib.load("models/xgb_model.joblib")
 
 # remove rows that contains cells with empty values
@@ -14,8 +14,8 @@ df.dropna(inplace=True)
 # convert date format from strings to date_time
 df['date'] = pd.to_datetime(df['date'])
 
-# filter rows by date (after 2010)
-filtered_df = df[df['date'] > '2010-01-01']
+# filter rows by date (after 2010 and before the tournament starts)
+filtered_df = df[(df['date'] > '2010-01-01') & (df['date'] < '2026-06-12')]
 
 # filter rows by tournament type
 tournament = [
