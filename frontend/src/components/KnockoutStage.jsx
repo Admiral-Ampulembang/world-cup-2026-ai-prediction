@@ -7,16 +7,26 @@ export function MatchCard({ match, side }) {
     const isRightSide = side === "right";
 
     const renderScore = (teamSide) => {
-        if (match.status === "FT") {
-            if (teamSide === "home") return <span className="font-bold px-1">{match.score.home}</span>
-            if (teamSide === "away") return <span className="font-bold px-1">{match.score.away}</span>
-        }
-        return null
+        const isFinished = ["FT", "AET", "PEN", "AWD"].includes(match.status);
+        if (!isFinished) return null;
+
+        const mainScore = teamSide === "home" ? match.score.home : match.score.away;
+        const penaltyScore = teamSide === "home" ? match.score.penalty?.home : match.score.penalty?.away;
+
+        return (
+            <span className="font-bold px-1 text-xs whitespace-nowrap flex items-center gap-1.5">
+                {penaltyScore !== null && penaltyScore !== undefined && (
+                    <span className="text-[10px] font-normal">
+                        ({penaltyScore})
+                    </span>
+                )}               
+                <span>{mainScore}</span>
+            </span>
+        );
     }
 
     const renderTeamRow = (teamName, teamLogo, scoreKey) => {
         return (
-            /* FIXED: Added px-1 here to create a clean safety cushion between the card's border and the flag icon */
             <div className={`flex justify-between items-center gap-1 w-full min-w-0 px-1 ${isRightSide ? "flex-row-reverse text-right" : "text-left"}`}>
                 <div className={`flex items-center gap-1.5 truncate w-16 min-w-0 ${isRightSide ? "flex-row-reverse" : ""}`}>
                     {teamLogo && <img src={teamLogo} className="w-4 h-4 object-contain flex-shrink-0" alt="" />}
@@ -28,9 +38,9 @@ export function MatchCard({ match, side }) {
             </div>
         )
     }
- 
+
     return (
-        <div className={`border-4 rounded p-1.5 w-32 bg-primary text-light h-18 text-sm border-gray-200 flex flex-col justify-center gap-1 ${match.status === "NS" ? "opacity-80" : ""}`}>
+        <div className={`border-4 rounded p-1.5 w-32 bg-primary text-light h-18 text-sm border-gray-200 flex flex-col justify-center gap-1 ${match.home_team === "TBD" ? "opacity-80" : ""}`}>
             {renderTeamRow(match.home_team, match.home_logo, "home")}
             {renderTeamRow(match.away_team, match.away_logo, "away")}
         </div>

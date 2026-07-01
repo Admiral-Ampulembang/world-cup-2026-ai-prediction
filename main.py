@@ -11,6 +11,11 @@ from datetime import datetime, timedelta
 from dateutil import tz
 from dotenv import load_dotenv
 load_dotenv()
+from knockout_rounds import (
+    get_r32_matches_in_bracket_order, 
+    get_round_matches_by_anchor, 
+    get_third_place_match
+)
 
 origins = [
     "http://localhost:5173",
@@ -137,7 +142,6 @@ async def get_fixtures(date, timezone):
         if utc_start <= fixture_dt < utc_end:
             filtered.append(fixture)
 
-    
     results = []
     for fixture in filtered:
         home_team = map_team_name(fixture["teams"]["home"]["name"])
@@ -178,35 +182,17 @@ async def get_knockout_fixtures():
     if cache.fixtures_cache is None:
         raise HTTPException(status_code=503, detail="Fixtures not available yet")
     
-    results = []
-    for fixture in cache.fixtures_cache:
-        home_team = map_team_name(fixture["teams"]["home"]["name"])
-        away_team = map_team_name(fixture["teams"]["away"]["name"])
-        status = fixture["fixture"]["status"]["short"]
-        knockout_round = fixture["league"]["round"]
-
-        match = {
-            "id": fixture["fixture"]["id"],
-            "round": knockout_round,
-            "status": status,
-            "elapsed": fixture["fixture"]["status"]["elapsed"],
-            "home_team": home_team,
-            "home_logo": fixture["teams"]["home"]["logo"],
-            "away_team": away_team,
-            "away_logo": fixture["teams"]["away"]["logo"],
-            "score": {
-                "home": fixture["goals"]["home"],
-                "away": fixture["goals"]["away"],
-                "penalty": {
-                    "home": fixture["score"]["penalty"]["home"],
-                    "away": fixture["score"]["penalty"]["away"]
-                }
-            }
-        }
-
-        if not knockout_round.startswith("Group Stage"):
-            results.append(match)
-
+    r32_matches = get_r32_matches_in_bracket_order(cache.standings_cache, cache.fixtures_cache)
+    
+    r16_matches = get_round_matches_by_anchor(r32_matches, cache.fixtures_cache, "Round of 16", 2, "r16")
+    qf_matches  = get_round_matches_by_anchor(r32_matches, cache.fixtures_cache, "Quarter-finals", 4, "qf")
+    sf_matches  = get_round_matches_by_anchor(r32_matches, cache.fixtures_cache, "Semi-finals", 8, "sf")
+    f_match     = get_round_matches_by_anchor(r32_matches, cache.fixtures_cache, "Final", 16, "f")
+    
+    third_place_match = get_third_place_match(cache.fixtures_cache)
+    
+    results = r32_matches + r16_matches + qf_matches + sf_matches + f_match + [third_place_match]
+    
     return results
 
 @app.get("/teams")

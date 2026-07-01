@@ -41,16 +41,17 @@ export default function GroupStage({currentGroup, setCurrentGroup}) {
                     {loading && <div className="text-light/60 py-4">Loading standings...</div>}
                     <div className='flex flex-col lg:flex-row pt-5 pb-0 gap-5'>
                         <div className='w-full lg:flex-1'>
-                            <table className='w-full'>
+                            <table className='w-full table-auto'>
                                 <thead>
                                     <tr className='border-b border-white/75'>
-                                        <th className='text-left w-full px-1 pb-2'>Team</th>
-                                        <th className='text-center px-3 pb-2'>MP</th>
-                                        <th className='hidden min-[500px]:table-cell text-center px-3 pb-2'>W</th>
-                                        <th className='hidden min-[500px]:table-cell text-center px-3 pb-2'>D</th>
-                                        <th className='hidden min-[500px]:table-cell text-center px-3 pb-2'>L</th>
-                                        <th className='hidden min-[500px]:table-cell text-center px-3 pb-2'>GD</th>
-                                        <th className='text-center pl-3 pr-2 pb-2'>Pts</th>
+                                        <th className='text-left w-full px-1 pb-2'>Team</th>                                       
+                                        <th className='text-center px-3 max-[475px]:px-1.5 max-[375px]:px-1 pb-2'>MP</th>
+                                        <th className='hidden min-[340px]:table-cell text-center px-3 max-[475px]:px-1.5 max-[375px]:px-1 pb-2'>W</th>
+                                        <th className='hidden min-[340px]:table-cell text-center px-3 max-[475px]:px-1.5 max-[375px]:px-1 pb-2'>D</th>
+                                        <th className='hidden min-[340px]:table-cell text-center px-3 max-[475px]:px-1.5 max-[375px]:px-1 pb-2'>L</th>
+                                        <th className='hidden min-[340px]:table-cell text-center px-3 max-[475px]:px-1.5 max-[375px]:px-1 pb-2'>GD</th>
+                                        
+                                        <th className='text-center pl-3 pr-2 max-[475px]:pl-1.5 max-[475px]:pr-1 max-[375px]:pl-1 max-[375px]:pr-0.5 pb-2'>Pts</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -60,19 +61,29 @@ export default function GroupStage({currentGroup, setCurrentGroup}) {
                                         return (
                                             <tr key={teamName} className='border-b border-white/75 last:border-b-0'>
                                                 <td className="py-3">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className='min-w-6 px-3'>{index + 1}</span>
-                                                        {teamStats?.logo && <img src={teamStats.logo} className='w-6 h-6 object-contain' />}
-                                                        <span className="sm:hidden">{TEAM_ABBREVIATIONS[teamName] ?? teamName}</span>
+                                                    <div className="flex items-center gap-2 max-[475px]:gap-1.5 max-[375px]:gap-1">
+                                                        <span className='min-w-6 px-3 max-[475px]:px-1 max-[375px]:px-0.5 text-center'>{index + 1}</span>
+                                                        {teamStats?.logo && <img src={teamStats.logo} className='w-6 h-6 object-contain flex-shrink-0' />}
+                                                        
+                                                        {/* Shortens the abbreviation character truncation max-width at under 400px and 350px boundaries */}
+                                                        <span className="sm:hidden truncate max-[400px]:max-w-[55px] max-[340px]:max-w-[45px]">
+                                                            {TEAM_ABBREVIATIONS[teamName] ?? teamName}
+                                                        </span>
                                                         <span className="hidden sm:inline">{teamName}</span>
                                                     </div>
                                                 </td>
-                                                <td className='text-center px-3 text-light/80'>{teamStats?.played ?? 0}</td>
-                                                <td className='hidden min-[500px]:table-cell text-center text-light/80 px-3'>{teamStats?.win ?? 0}</td>
-                                                <td className='hidden min-[500px]:table-cell text-center text-light/80 px-3'>{teamStats?.draw ?? 0}</td>
-                                                <td className='hidden min-[500px]:table-cell text-center text-light/80 px-3'>{teamStats?.lose ?? 0}</td>
-                                                <td className='hidden min-[500px]:table-cell text-center text-light/80 px-3'>{teamStats?.goalsDiff ?? 0}</td>
-                                                <td className='text-center font-bold pl-3 pr-2'>{teamStats?.points ?? 0}</td>
+                                                
+                                                {/* MP Column */}
+                                                <td className='text-center px-3 max-[475px]:px-1.5 max-[375px]:px-1 text-light/80'>{teamStats?.played ?? 0}</td>
+                                                
+                                                {/* W, D, L, GD Columns */}
+                                                <td className='hidden min-[340px]:table-cell text-center text-light/80 px-3 max-[475px]:px-1.5 max-[375px]:px-1'>{teamStats?.win ?? 0}</td>
+                                                <td className='hidden min-[340px]:table-cell text-center text-light/80 px-3 max-[475px]:px-1.5 max-[375px]:px-1'>{teamStats?.draw ?? 0}</td>
+                                                <td className='hidden min-[340px]:table-cell text-center text-light/80 px-3 max-[475px]:px-1.5 max-[375px]:px-1'>{teamStats?.lose ?? 0}</td>
+                                                <td className='hidden min-[340px]:table-cell text-center text-light/80 px-3 max-[475px]:px-1.5 max-[375px]:px-1'>{teamStats?.goalsDiff ?? 0}</td>
+                                                
+                                                {/* Pts Column */}
+                                                <td className='text-center font-bold pl-3 pr-2 max-[475px]:pl-1.5 max-[475px]:pr-1 max-[375px]:pl-1 max-[375px]:pr-0.5'>{teamStats?.points ?? 0}</td>
                                             </tr>
                                         )
                                     })}

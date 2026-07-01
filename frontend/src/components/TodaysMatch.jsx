@@ -45,72 +45,87 @@ export default function TodaysMatch() {
                     {loading && <div>Loading ...</div>}
                     {error && <div className="text-red-400 py-4">Failed to load matches. Please try again later.</div>}
                     {!loading && !error && matches.length === 0 && <div>No matches scheduled for this date.</div>}
-                    {!loading && matches.map((match) => (                    
-                        <div key={match.id} className={`bg-primary text-light mb-6 rounded-lg ${match.status === "FT" ? "py-6" : "py-10"}`}>
-                            <div className='w-full px-4 lg:px-10'>
-                                <div className='flex justify-center items-center gap-2 sm:gap-4 lg:gap-10 pb-5 w-full'>
-                                    <div className='flex flex-1 items-center justify-end gap-2 sm:gap-3 font-bold text-right min-w-0'>
-                                        <span className='truncate sm:whitespace-normal'>
-                                            <span className="sm:hidden">{TEAM_ABBREVIATIONS[match.home_team] ?? match.home_team}</span>
-                                            <span className="hidden sm:inline">{match.home_team}</span>
-                                        </span>
-                                        <img 
-                                            src={`https://flagcdn.com/w160/${FLAG_CODES[match.home_team] ?? "un"}.png`} 
-                                            className='w-9 h-6 sm:w-12 sm:h-8 object-cover rounded-sm shadow-sm flex-shrink-0' 
-                                            alt="Home Flag"
-                                        />
+                    {!loading && matches.map((match) => {
+                        const isFinished = ["FT", "AET", "PEN", "AWD"].includes(match.status);
+
+                        return (                    
+                            <div key={match.id} className={`bg-primary text-light mb-6 rounded-lg ${isFinished ? "py-6" : "py-10"}`}>
+                                <div className='w-full px-4 lg:px-10'>
+                                    <div className='flex justify-center items-center gap-2 sm:gap-4 lg:gap-10 pb-5 w-full'>
+                                        <div className='flex flex-1 items-center justify-end gap-2 sm:gap-3 font-bold text-right min-w-0'>
+                                            <span className='truncate sm:whitespace-normal'>
+                                                <span className="sm:hidden">{TEAM_ABBREVIATIONS[match.home_team] ?? match.home_team}</span>
+                                                <span className="hidden sm:inline">{match.home_team}</span>
+                                            </span>
+                                            <img 
+                                                src={`https://flagcdn.com/w160/${FLAG_CODES[match.home_team] ?? "un"}.png`} 
+                                                className='w-9 h-6 sm:w-12 sm:h-8 object-cover rounded-sm shadow-sm flex-shrink-0' 
+                                                alt="Home Flag"
+                                            />
+                                        </div>
+                                        
+                                        <div className='px-2 font-semibold flex-shrink-0 text-sm sm:text-base'>vs</div>
+                                        
+                                        <div className='flex flex-1 items-center justify-start gap-2 sm:gap-3 font-bold text-left min-w-0'>
+                                            <img 
+                                                src={`https://flagcdn.com/w160/${FLAG_CODES[match.away_team] ?? "un"}.png`} 
+                                                className='w-9 h-6 sm:w-12 sm:h-8 object-cover rounded-sm shadow-sm flex-shrink-0' 
+                                                alt="Away Flag"
+                                            />
+                                            <span className='truncate sm:whitespace-normal'>
+                                                <span className="sm:hidden">{TEAM_ABBREVIATIONS[match.away_team] ?? match.away_team}</span>
+                                                <span className="hidden sm:inline">{match.away_team}</span>
+                                            </span>
+                                        </div>
                                     </div>
                                     
-                                    <div className='px-2 font-semibold flex-shrink-0 text-sm sm:text-base'>vs</div>
+                                    <hr className='border-white/50'></hr>
                                     
-                                    <div className='flex flex-1 items-center justify-start gap-2 sm:gap-3 font-bold text-left min-w-0'>
-                                        <img 
-                                            src={`https://flagcdn.com/w160/${FLAG_CODES[match.away_team] ?? "un"}.png`} 
-                                            className='w-9 h-6 sm:w-12 sm:h-8 object-cover rounded-sm shadow-sm flex-shrink-0' 
-                                            alt="Away Flag"
-                                        />
-                                        <span className='truncate sm:whitespace-normal'>
-                                            <span className="sm:hidden">{TEAM_ABBREVIATIONS[match.away_team] ?? match.away_team}</span>
-                                            <span className="hidden sm:inline">{match.away_team}</span>
-                                        </span>
-                                    </div>
+                                    {isFinished ? (
+                                        <div className='flex flex-col items-center pt-3'>
+                                            <div className='flex justify-center gap-10 text-2xl font-bold items-center'>
+                                                <span>{match.score.home}</span>
+                                                <span className="text-xs font-medium bg-white/20 px-2 py-0.5 rounded tracking-wider">
+                                                    {match.status}
+                                                </span>
+                                                <span>{match.score.away}</span>
+                                            </div>
+
+                                            {match.status === "PEN" && match.score.penalty?.home !== null && match.score.penalty?.away !== null && (
+                                                <div className='text-xs font-semibold tracking-wider text-light mt-2 bg-white/10 px-3 py-1 rounded-full'>
+                                                    Penalties: {match.score.penalty.home} - {match.score.penalty.away}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <div className="flex justify-between py-5">
+                                                <div className='text-left'>
+                                                    <div>Home</div>
+                                                    <div>{(match.prediction.home_win * 100).toFixed(1)}%</div>
+                                                </div>
+
+                                                <div className='text-center'>
+                                                    <div>Draw</div>
+                                                    <div>{(match.prediction.draw * 100).toFixed(1)}%</div>
+                                                </div>
+
+                                                <div className='text-right'>
+                                                    <div>Away</div>
+                                                    <div>{(match.prediction.away_win * 100).toFixed(1)}%</div>
+                                                </div>
+                                            </div>
+                                            <div className='flex w-full overflow-hidden rounded-full h-[10px]'>
+                                                <div style={{width: `${(match.prediction.home_win * 100).toFixed(1)}%`}} className='bg-green-400 h-full'></div>
+                                                <div style={{width: `${(match.prediction.draw * 100).toFixed(1)}%`}} className='bg-orange-400 h-full'></div>
+                                                <div style={{width: `${(match.prediction.away_win * 100).toFixed(1)}%`}} className='bg-red-400 h-full'></div>
+                                            </div>
+                                        </div>
+                                    )}                              
                                 </div>
-                                
-                                <hr className='border-white/50'></hr>
-                                {match.status === "FT" ? (
-                                    <div className='flex justify-center gap-10 pt-3 text-2xl font-bold'>
-                                        <span>{match.score.home}</span>
-                                        <span>-</span>
-                                        <span>{match.score.away}</span>
-                                    </div>
-                                ) : (
-                                    <div>
-                                        <div className="flex justify-between py-5">
-                                            <div className='text-left'>
-                                                <div>Home</div>
-                                                <div>{(match.prediction.home_win * 100).toFixed(1)}%</div>
-                                            </div>
-
-                                            <div className='text-center'>
-                                                <div>Draw</div>
-                                                <div>{(match.prediction.draw * 100).toFixed(1)}%</div>
-                                            </div>
-
-                                            <div className='text-right'>
-                                                <div>Away</div>
-                                                <div>{(match.prediction.away_win * 100).toFixed(1)}%</div>
-                                            </div>
-                                        </div>
-                                        <div className='flex w-full overflow-hidden rounded-full h-[10px]'>
-                                            <div style={{width: `${(match.prediction.home_win * 100).toFixed(1)}%`}} className='bg-green-400 h-full'></div>
-                                            <div style={{width: `${(match.prediction.draw * 100).toFixed(1)}%`}} className='bg-orange-400 h-full'></div>
-                                            <div style={{width: `${(match.prediction.away_win * 100).toFixed(1)}%`}} className='bg-red-400 h-full'></div>
-                                        </div>
-                                    </div>
-                                )}                              
-                            </div>
-                        </div>                    
-                    ))}
+                            </div>                    
+                        );
+                    })}
                 </div>
             </div>
             <div className='w-full lg:w-1/3 lg:mt-[3.25rem]'>
@@ -124,8 +139,6 @@ export default function TodaysMatch() {
                         onViewChange={({ view }) => view !== 'month'}
                         className="my-custom-calendar"
                         onChange={handleDateChange} 
-
-                        // remove the << and >> arrows:
                         prev2Label={null}
                         next2Label={null}
                     />
