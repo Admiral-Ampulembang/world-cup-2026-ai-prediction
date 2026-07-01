@@ -68,8 +68,15 @@ def poll_fixtures():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    refresh_fixtures()
-    refresh_standings()
+    try:
+        refresh_fixtures()
+    except Exception as e:
+        print(f"refresh_fixtures failed at startup: {e}")
+
+    try:
+        refresh_standings()
+    except Exception as e:
+        print(f"refresh_standings failed at startup: {e}")
 
     scheduler = BackgroundScheduler()
     scheduler.add_job(poll_fixtures, "cron", minute="0,30", timezone="UTC")

@@ -7,7 +7,12 @@ def fetch_fixtures():
     if not key:
         raise ValueError("API_FOOTBALL_KEY environment variable not set")
     
-    response = requests.get("https://v3.football.api-sports.io/fixtures?league=1&season=2026", headers={"x-apisports-key": key})
+    response = requests.get(
+        "https://v3.football.api-sports.io/fixtures?league=1&season=2026",
+        headers={"x-apisports-key": key},
+        timeout=10
+    )
+    response.raise_for_status()
     data = response.json()
 
     return data["response"]
@@ -18,7 +23,12 @@ def fetch_standings():
     if not key:
         raise ValueError("API_FOOTBALL_KEY environment variable not set")
     
-    response = requests.get("https://v3.football.api-sports.io/standings?league=1&season=2026", headers={"x-apisports-key": key})
+    response = requests.get(
+        "https://v3.football.api-sports.io/standings?league=1&season=2026",
+        headers={"x-apisports-key": key},
+        timeout=10
+    )
+    response.raise_for_status()
     data = response.json()
 
     return data["response"][0]["league"]["standings"]

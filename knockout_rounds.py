@@ -39,9 +39,6 @@ def get_r32_matches_in_bracket_order(standings_cache, fixtures_cache):
         winners_dict[group] = map_team_name(item[0]["team"]["name"])
         runnersup_dict[group] = map_team_name(item[1]["team"]["name"])
     
-    print(f"DEBUG: winners_dict = {winners_dict}")
-    print(f"DEBUG: runnersup_dict = {runnersup_dict}")
-    
     # Get all R32 matches from API
     all_r32_api_matches = []
     for fixture in fixtures_cache:
@@ -72,16 +69,11 @@ def get_r32_matches_in_bracket_order(standings_cache, fixtures_cache):
 
             all_r32_api_matches.append(match)
     
-    print(f"DEBUG: Found {len(all_r32_api_matches)} R32 matches in API")
-    print(f"DEBUG: R32 teams in API: {[(m['home_team'], m['away_team']) for m in all_r32_api_matches]}")
-    
     # Build lookup by team
     matches_by_team = {}
     for match in all_r32_api_matches:
         matches_by_team[match["home_team"]] = match
         matches_by_team[match["away_team"]] = match
-    
-    print(f"DEBUG: matches_by_team keys = {list(matches_by_team.keys())}")
     
     # Get bracket structure
     bracket_slots = build_r32_bracket_order()
@@ -94,18 +86,14 @@ def get_r32_matches_in_bracket_order(standings_cache, fixtures_cache):
         else:  # runner-up
             anchor_team = runnersup_dict.get(group)
         
-        print(f"DEBUG: Slot {group} {position} -> anchor: {anchor_team}")
-        
         if anchor_team and anchor_team in matches_by_team:
             match = matches_by_team[anchor_team]
             # Avoid duplicates - only add if not already in ordered_matches
             if not any(m["id"] == match["id"] for m in ordered_matches):
                 ordered_matches.append(match)
-                print(f"DEBUG: Added match: {match['home_team']} vs {match['away_team']}")
         else:
-            print(f"DEBUG: No match found for {anchor_team}")
+            pass
     
-    print(f"DEBUG: Total R32 matches in bracket order: {len(ordered_matches)}")
     return ordered_matches
 
 
