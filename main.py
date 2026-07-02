@@ -189,14 +189,14 @@ async def get_knockout_fixtures():
     if cache.fixtures_cache is None:
         raise HTTPException(status_code=503, detail="Fixtures not available yet")
     
+    # Chain rounds: each round feeds into the next
     r32_matches = get_r32_matches_in_bracket_order(cache.standings_cache, cache.fixtures_cache)
+    r16_matches = get_round_matches_by_anchor(r32_matches, cache.fixtures_cache, "Round of 16", "r16")
+    qf_matches  = get_round_matches_by_anchor(r16_matches, cache.fixtures_cache, "Quarter-finals", "qf")
+    sf_matches  = get_round_matches_by_anchor(qf_matches, cache.fixtures_cache, "Semi-finals", "sf")
+    f_match     = get_round_matches_by_anchor(sf_matches, cache.fixtures_cache, "Final", "f")
     
-    r16_matches = get_round_matches_by_anchor(r32_matches, cache.fixtures_cache, "Round of 16", 2, "r16")
-    qf_matches  = get_round_matches_by_anchor(r32_matches, cache.fixtures_cache, "Quarter-finals", 4, "qf")
-    sf_matches  = get_round_matches_by_anchor(r32_matches, cache.fixtures_cache, "Semi-finals", 8, "sf")
-    f_match     = get_round_matches_by_anchor(r32_matches, cache.fixtures_cache, "Final", 16, "f")
-    
-    third_place_match = get_third_place_match(cache.fixtures_cache)
+    third_place_match = get_third_place_match(sf_matches, cache.fixtures_cache)
     
     results = r32_matches + r16_matches + qf_matches + sf_matches + f_match + [third_place_match]
     
