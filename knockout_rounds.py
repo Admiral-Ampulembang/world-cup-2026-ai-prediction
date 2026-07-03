@@ -79,9 +79,6 @@ def get_r32_matches_in_bracket_order(standings_cache, fixtures_cache):
     bracket_slots = build_r32_bracket_order()
     
     # Reorder matches to bracket order
-    # NOTE: this array must stay exactly len(bracket_slots) long and in order.
-    # get_round_matches_by_anchor pairs entries by fixed position (i, i+1) -
-    # a dropped slot here silently shifts every later round's pairings.
     ordered_matches = []
     for group, position in bracket_slots:
         if position == 'winner':
@@ -220,9 +217,22 @@ def get_round_matches_by_anchor(feeder_matches, fixtures_cache, round_name, roun
         feeder1 = feeder_matches[i]
         feeder2 = feeder_matches[i + 1] if i + 1 < len(feeder_matches) else None
         
-        # Extract winners
+        # Extract winners and logos
         team1 = extract_winner(feeder1)
+        logo1 = None
+        if team1:
+            if feeder1["home_team"] == team1:
+                logo1 = feeder1["home_logo"]
+            else:
+                logo1 = feeder1["away_logo"]
+        
         team2 = extract_winner(feeder2) if feeder2 else None
+        logo2 = None
+        if team2:
+            if feeder2["home_team"] == team2:
+                logo2 = feeder2["home_logo"]
+            else:
+                logo2 = feeder2["away_logo"]
         
         print(f"DEBUG: {round_name} Slot {slot_idx + 1} -> {team1} vs {team2}")
         
@@ -240,23 +250,15 @@ def get_round_matches_by_anchor(feeder_matches, fixtures_cache, round_name, roun
         if match_found:
             ordered_matches.append(match_found)
         else:
-            # Determine partial vs full TBD
-            if team1 and not team2:
-                home, away = team1, "TBD"
-            elif team2 and not team1:
-                home, away = "TBD", team2
-            else:
-                home, away = "TBD", "TBD"
-            
             inferred_match = {
                 "id": f"tbd-{round_key}-{slot_idx}",
                 "round": round_name,
                 "status": "NS",
                 "elapsed": None,
-                "home_team": home,
-                "home_logo": None,
-                "away_team": away,
-                "away_logo": None,
+                "home_team": team1 if team1 else "TBD",
+                "home_logo": logo1,
+                "away_team": team2 if team2 else "TBD",
+                "away_logo": logo2,
                 "score": {"home": None, "away": None, "penalty": {"home": None, "away": None}}
             }
             ordered_matches.append(inferred_match)
@@ -272,9 +274,22 @@ def get_third_place_match(sf_matches, fixtures_cache):
     if fixtures_cache is None:
         raise HTTPException(status_code=503, detail="Fixtures not available yet")
     
-    # Extract losers from SF matches
+    # Extract losers and logos from SF matches
     loser1 = extract_loser(sf_matches[0]) if len(sf_matches) > 0 else None
+    logo1 = None
+    if loser1 and len(sf_matches) > 0:
+        if sf_matches[0]["home_team"] == loser1:
+            logo1 = sf_matches[0]["home_logo"]
+        else:
+            logo1 = sf_matches[0]["away_logo"]
+    
     loser2 = extract_loser(sf_matches[1]) if len(sf_matches) > 1 else None
+    logo2 = None
+    if loser2 and len(sf_matches) > 1:
+        if sf_matches[1]["home_team"] == loser2:
+            logo2 = sf_matches[1]["home_logo"]
+        else:
+            logo2 = sf_matches[1]["away_logo"]
     
     print(f"DEBUG: Third Place -> {loser1} vs {loser2}")
     
@@ -307,21 +322,14 @@ def get_third_place_match(sf_matches, fixtures_cache):
             return match
     
     # Not in API yet, return inferred or partial TBD placeholder
-    if loser1 and not loser2:
-        home, away = loser1, "TBD"
-    elif loser2 and not loser1:
-        home, away = "TBD", loser2
-    else:
-        home, away = "TBD", "TBD"
-    
     return {
         "id": "tbd-3p",
         "round": "3rd Place Final",
         "status": "NS",
         "elapsed": None,
-        "home_team": home,
-        "home_logo": None,
-        "away_team": away,
-        "away_logo": None,
+        "home_team": loser1 if loser1 else "TBD",
+        "home_logo": logo1,
+        "away_team": loser2 if loser2 else "TBD",
+        "away_logo": logo2,
         "score": {"home": None, "away": None, "penalty": {"home": None, "away": None}}
     }

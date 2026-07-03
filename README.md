@@ -109,6 +109,8 @@ home_prob = result['home_win'] + result['draw'] / 2
 away_prob = result['away_win'] + result['draw'] / 2
 ```
 
+This ensures the simulation respects tournament rules (no draws in knockouts) while preserving XGBoost's uncertainty. Note: Live fixtures served via `/fixtures` endpoint still show draw probabilities for all rounds, including knockouts. This reflects raw model output, not tournament rules.
+
 Output is written to `frontend/src/data/advancement_probabilities.json` and imported statically by the frontend:
 
 ```json
@@ -128,16 +130,28 @@ FastAPI app (`main.py`) with the following endpoints:
 |---|---|
 | `GET /predict?home_team=&away_team=` | Returns XGBoost win probabilities for a matchup |
 | `GET /fixtures?date=&timezone=` | Returns fixtures for a given date; includes win probabilities for upcoming matches only |
-| `GET /fixtures/knockout` | Returns all knockout stage fixtures |
+| `GET /fixtures/knockout` | Returns knockout stage fixtures in proper bracket order; inferred matchups displayed immediately when both teams confirmed, replaced with API data on arrival |
 | `GET /standings` | Returns live group standings |
 | `GET /teams` | Returns team name → logo URL mapping |
 | `GET /health` | Health check |
 
-**Caching & polling:** Fixtures and standings are fetched from API-Football at startup and cached in memory. APScheduler polls for fixture updates every 30 minutes. Standings are only refreshed when a fixture status transitions to `FT` — not on every poll.
+**Caching & polling:** Fixtures and standings are fetched from API-Football at startup and cached in memory. APScheduler polls for fixture updates every 30 minutes. Standings are only refreshed when a fixture status transitions to `FT` or `PEN` (penalty shootout) — not on every poll.
 
 **Team name mapping:** `mapper.py` maps API-Football team names to match the model's training data (e.g. `Türkiye` → `Turkey`, `Congo DR` → `DR Congo`, `Cape Verde Islands` → `Cape Verde`).
 
 **CORS** is configured for `localhost:5173` (dev) and `https://world-cup-2026-ai-prediction.vercel.app` (production).
+
+#### Knockout Bracket Ordering
+
+The `/fixtures/knockout` endpoint returns matches in proper bracket order, not API chronological order. This is handled by `knockout_rounds.py`:
+
+**Round of 32:** The 48-team format creates a fixed bracket structure determined by tournament rules: Groups A–L are mapped to specific R32 slots. Slot 1 = Group E winner vs best 3rd-place finisher, Slot 2 = Group I winner vs best 3rd from another group, etc. R32 matches are fetched from the API and reordered to align with this hardcoded structure using Group winners/runners-up as anchors.
+
+**Round of 16 through Final:** Bracket slots are dynamically built from previous round winners. When an R32 match finishes (status `FT`, `AET`, or `PEN`), the winner is extracted and paired with the winner from the adjacent R32 slot, forming an R16 matchup. Same logic cascades through QF → SF → Final.
+
+**Match inference:** API-Football often lags in creating new-round fixtures (sometimes 10+ hours after the previous round concludes). To provide immediate feedback, when both teams in a bracket slot are confirmed winners, the backend infers the matchup and displays it with extracted team flags (`home_logo`, `away_logo` pulled from the feeder matches). Once the API creates the official match object, it replaces the inferred version on the next poll.
+
+**Third place:** Extracted from SF losers using the same winner/loser extraction logic, displayed with or without inferred team names depending on SF completion.
 
 ---
 
@@ -201,6 +215,7 @@ Single-page React app with four sections:
 ├── exploration.ipynb                 # Full pipeline: EDA → training → simulation
 ├── api_football.py                   # API-Football client
 ├── cache.py                          # In-memory fixture/standings cache
+├── knockout_rounds.py                # Knockout bracket ordering and match inference
 ├── main.py                           # FastAPI app and API endpoints
 ├── mapper.py                         # Team name normalization (API → model)
 ├── predictor.py                      # Model loading, feature computation, prediction
@@ -252,7 +267,7 @@ npm run dev
 
 ## Limitations
 
-- Draw probability in knockouts is split 50/50 between teams, ignoring penalty shootout tendencies
+- API-Football lags in creating new-round fixtures after previous round conclusions (typically 30 min to 10+ hours). Inferred matches (based on confirmed winners) appear immediately but lack official API data until the delay resolves
 - Render free tier causes cold-start delays on the first request; the frontend retries with a 20-second backoff to compensate
 
 ---
