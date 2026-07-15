@@ -13,14 +13,26 @@ export function MatchCard({ match, side }) {
         const mainScore = teamSide === "home" ? match.score.home : match.score.away;
         const penaltyScore = teamSide === "home" ? match.score.penalty?.home : match.score.penalty?.away;
 
+        const penaltyEl = (penaltyScore !== null && penaltyScore !== undefined) && (
+            <span className="text-[10px] font-normal">
+                ({penaltyScore})
+            </span>
+        );
+        const mainEl = <span>{mainScore}</span>;
+
         return (
             <span className="font-bold px-1 text-xs whitespace-nowrap flex items-center gap-1.5">
-                {penaltyScore !== null && penaltyScore !== undefined && (
-                    <span className="text-[10px] font-normal">
-                        ({penaltyScore})
-                    </span>
-                )}               
-                <span>{mainScore}</span>
+                {isRightSide ? (
+                    <>
+                        {mainEl}
+                        {penaltyEl}
+                    </>
+                ) : (
+                    <>
+                        {penaltyEl}
+                        {mainEl}
+                    </>
+                )}
             </span>
         );
     }
