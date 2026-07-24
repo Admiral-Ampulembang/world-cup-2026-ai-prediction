@@ -44,7 +44,17 @@ def fetch_fixtures():
         )
         response.raise_for_status()
         data = response.json()
-        return data["response"]
+        fixtures = data["response"]
+        
+        # Check if API returned empty data (subscription expired)
+        if not fixtures:
+            print("API returned empty data; loading from cache")
+            fixtures, _ = load_from_cache()
+            if fixtures:
+                print(f"[DEBUG] Cache fallback successful after empty API response. Loaded {len(fixtures)} fixtures")
+                return fixtures
+        
+        return fixtures
     except Exception as e:
         print(f"API call failed ({e}); loading from cache")
         fixtures, _ = load_from_cache()
@@ -72,7 +82,17 @@ def fetch_standings():
         )
         response.raise_for_status()
         data = response.json()
-        return data["response"][0]["league"]["standings"]
+        standings = data["response"][0]["league"]["standings"]
+        
+        # Check if API returned empty data (subscription expired)
+        if not standings:
+            print("API returned empty standings; loading from cache")
+            _, standings = load_from_cache()
+            if standings:
+                print(f"[DEBUG] Cache fallback successful after empty API response. Loaded standings")
+                return standings
+        
+        return standings
     except Exception as e:
         print(f"API call failed ({e}); loading from cache")
         _, standings = load_from_cache()
